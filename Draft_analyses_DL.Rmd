@@ -1,0 +1,163 @@
+---
+title: 'Lab 2 Report: TV watching across generations'
+author: "Godsee Joy, Karanveer Lamba, Deric Liang"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+\vspace{-5truemm}
+
+```{r}
+# Clear environment
+rm(list = ls())
+
+# Set seed
+set.seed(23948729)
+
+# Import libraries
+library(tidyverse)
+library(readxl)
+library(ggpubr)
+library(lmtest)
+library(sandwich)
+```
+
+```{r, warning = F}
+# Read data
+gss_df_raw <- read_excel("GSS.xlsx", sheet = "Data")
+
+# Clean variables
+gss_df <- gss_df_raw %>%
+  mutate(age = as.numeric(case_when(age == "89 or older" ~ "89",
+                                    age == ".n: No answer" ~ NA,
+                                    T ~ age)),
+         age_cat = case_when(age >= 18 & age <= 29 ~ "18-29",
+                             age >= 30 & age <= 39 ~ "30-39",
+                             age >= 40 & age <= 49 ~ "40-49",
+                             age >= 50 & age <= 59 ~ "50-59",
+                             age >= 60 & age <= 69 ~ "60-69",
+                             age >= 70 & age <= 79 ~ "70-79",
+                             age >= 80 & age <= 89 ~ "80+"),
+         tvhours = as.numeric(case_when(grepl("\\.", tvhours) ~ NA,
+                                        tvhours == "0 hours" ~ "0",
+                                        tvhours == "24 hours" ~ "24",
+                                        T ~ tvhours)),
+         marital = case_when(grepl("\\.", marital) ~ NA,
+                             marital == "Married" ~ "Married",
+                             T ~ "Not married"),
+         wrkstat = case_when(grepl("\\.", wrkstat) ~ NA,
+                             grepl("Working", wrkstat) ~ "Working",
+                             wrkstat %in% c("In school", "Keeping house") ~ "Student/housekeeper",
+                             T ~ "Not working"),
+         tvhours_trnsf = log(tvhours + 1),
+         hompop = as.numeric(hompop),
+         coninc = as.numeric(coninc),
+         coninc = case_when(coninc < 0 ~ NA,
+                            T ~ coninc)) %>%
+  filter(!is.na(age), !is.na(tvhours))
+
+# Train/test datasets
+smp_size = floor(0.3 * nrow(gss_df))
+train_ind <- sample(seq_len(nrow(gss_df)), size = smp_size)
+gss_df_train <- gss_df[train_ind,]
+gss_df_test <- gss_df[-train_ind,]
+```
+
+```{r}
+# Histogram for age and tv hours
+age_plot <- gss_df %>%
+  ggplot(aes(x = age)) +
+  geom_histogram() +
+  labs(x = "Age", y = "Frequency", title = "Distribution of age")
+inc_plot <- gss_df %>%
+  ggplot(aes(x = coninc)) +
+  geom_histogram() +
+  labs(x = "Income", y = "Frequency", title = "Distribution of income")
+tv_plot <- gss_df %>%
+  ggplot(aes(x = tvhours)) +
+  geom_histogram() +
+  labs(x = "Hours of TV watched per day", y = "Frequency", 
+       title = "Distribution of TV hrs per day")
+ggarrange(tv_plot, inc_plot, ncol = 1, nrow = 2)
+```
+
+```{r}
+# Facet graph of tv hours versus all covariates
+tv_age_plot <- gss_df %>%
+  ggplot(aes(x = age_cat, y = tvhours)) +
+  geom_boxplot() +
+  labs(x = "Age", y = "TV hrs", title = "TV hrs vs. age") +
+  theme(axis.text.x = element_text(angle = 90))
+tv_educ_plot <- gss_df %>%
+  ggplot(aes(x = reorder(degree, -tvhours), y = tvhours)) +
+  geom_boxplot() +
+  labs(x = "Highest level of education", y = "TV hrs", title = "TV hrs vs. education") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = .9))
+tv_wrk_plot <- gss_df %>%
+  drop_na(wrkstat) %>%
+  ggplot(aes(x = reorder(wrkstat, -tvhours), y = tvhours)) +
+  geom_boxplot() +
+  labs(x = "Employment status", y = "TV hrs", title = "TV hrs vs. employment") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+tv_marital_plot <- gss_df %>%
+  drop_na(wrkstat) %>%
+  ggplot(aes(x = reorder(marital, -tvhours), y = tvhours)) +
+  geom_boxplot() +
+  labs(x = "Marital status", y = "TV hrs", title = "TV hrs vs. marital status") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+```{r}
+# Plot first two figures
+ggarrange(tv_age_plot, tv_educ_plot, ncol = 2, nrow = 1)
+```
+
+```{r}
+# Plot last two figures
+ggarrange(tv_wrk_plot, tv_marital_plot, ncol = 2, nrow = 1)
+```
+
+```{r}
+tv_inc_plot <- gss_df_train %>%
+  ggplot(aes(x = log(coninc), y = tvhours)) +
+  geom_jitter() +
+  geom_smooth(method = lm, se = TRUE) +
+  labs(x = "Income", y = "TV hours", title = "TV hours vs. income")
+tv_inc_plot
+```
+
+```{r}
+tv_hh_plot <- gss_df_train %>%
+  ggplot(aes(x = hompop, y = tvhours, color = age_cat)) +
+  geom_jitter() +
+  geom_smooth(method = lm, se = F) +
+  labs(x = "hh size", y = "TV hours", title = "TV hours vs. hh size")
+tv_hh_plot
+```
+
+```{r}
+# Full model with robust SE
+tv_mod <- lm(tvhours_trnsf ~ age_cat + wrkstat + marital + degree + log(coninc), data = gss_df_train)
+coeftest(tv_mod, vcov = vcovHC(tv_mod))
+```
+
+```{r}
+# Full model with robust SE and numeric age
+tv_mod <- lm(tvhours_trnsf ~ age + wrkstat + marital + degree + log(coninc), data = gss_df_train)
+coeftest(tv_mod, vcov = vcovHC(tv_mod))
+```
+
+```{r}
+# Full model without robust SE
+tv_mod <- lm(tvhours_trnsf ~ age_cat + wrkstat + marital + degree + log(coninc), data = gss_df_train)
+coeftest(tv_mod)
+```
+
+```{r}
+# Age-only model (without categories or robust standard errors)
+lm_control <- lm(tvhours_trnsf ~ age, data = gss_df_train)
+coeftest(lm_control)
+```
+
