@@ -1,6 +1,7 @@
 Lab 2 Report: TV watch time across generations
 ================
 Godsee Joy, Karanveer Lamba, Deric Liang
+
 2024-04-10
 
 ## Introduction
