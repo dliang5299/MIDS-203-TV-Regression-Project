@@ -4,7 +4,7 @@ Godsee Joy, Karanveer Lamba, Deric Liang
 
 2024-04-10
 
-Please see "Godsee_Karanveer_Deric_Lab2_Report.Rmd" for backup code on data processing and modeling.
+Please see "Godsee_Karanveer_Deric_Lab2_Report.Rmd" for backup code on data processing and modeling. Please also see "Godsee_Karanveer_Deric_Lab2_Presentation.pdf" for regression tables and additional data visualizations for assessing OLS modeling assumptions/results.
 
 ## Introduction
 
