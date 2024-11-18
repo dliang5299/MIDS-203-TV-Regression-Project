@@ -1,8 +1,8 @@
 ---
 title: 'Lab 2 Report: TV watch time across generations'
 author: "Godsee Joy, Karanveer Lamba, Deric Liang"
-date: "`r Sys.Date()`"
-output: pdf_document
+date: "2024-04-10"
+output: github_document
 ---
 
 \vspace{-10truemm}
@@ -38,7 +38,7 @@ The values for age responses vary from 18 to 89+ years, which we categorize into
 
 ```{r, echo = F, include = F}
 # Read data
-gss_df_raw <- fread("GSSv3.csv")
+gss_df_raw <- fread("GSS.csv")
 
 # Clean variables
 gss_df <- gss_df_raw %>%
