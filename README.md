@@ -4,6 +4,8 @@ Godsee Joy, Karanveer Lamba, Deric Liang
 
 2024-04-10
 
+Please see "Godsee_Karanveer_Deric_Lab2_Report.Rmd" for backup code.
+
 ## Introduction
 
 With new technologies rapidly emerging, there is reason to believe that
