@@ -4,7 +4,7 @@ Godsee Joy, Karanveer Lamba, Deric Liang
 
 2024-04-10
 
-Please see "Godsee_Karanveer_Deric_Lab2_Report.Rmd" for backup code.
+Please see "Godsee_Karanveer_Deric_Lab2_Report.Rmd" for backup code on data processing and modeling.
 
 ## Introduction
 
