@@ -86,6 +86,8 @@ considered models with household size (*hompop*, metric) and sex (*sex*,
 nominal), but decided against including them due to statistically
 insignificant improvements to the model based on ANOVA F-tests.
 
+## Results
+
 Directionally, the negative relationship of TV hours with income and
 education aligns with previous literature. We also find that marriage
 and employment decrease TV hours per our hypotheses, though marital
@@ -104,7 +106,7 @@ errors helps mitigate this.
 
 <img src="Godsee_Karanveer_Deric_Lab2_Report_files/figure-gfm/unnamed-chunk-4-1.png" width="75%" height="75%" style="display: block; margin: auto;" />
 
-## Conclusion
+## Limitations
 
 We note several limitations to our findings. First, due to missing data
 in 2022, we used older data from 2018. Given the significant effects of
